@@ -1,4 +1,4 @@
-package com.agrireach.employee;
+package com.agrireach.employee.entity;
 import com.agrireach.user.User;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;

@@ -1,5 +1,6 @@
-package com.agrireach.employee;
+package com.agrireach.employee.controller;
 
+import com.agrireach.employee.service.EmployeeService;
 import com.agrireach.employee.dto.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

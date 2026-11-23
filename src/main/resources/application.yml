@@ -1,31 +1,26 @@
 spring:
   application:
     name: agrireach-backend
-  # PostgreSQL database connection
   datasource:
-    url: jdbc:postgresql://localhost:5432/agrireach
-    username: agrireach_app
-    password: root
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
-  # JPA and Hibernate configuration
   jpa:
     hibernate:
-      ddl-auto: none
-    show-sql: true
+      ddl-auto: validate
+    show-sql: false
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
-  # Flyway database migration configuration
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: false
     validate-on-migrate: true
-# Application server
 server:
   port: 8080
-# Spring Boot Actuator
 management:
   endpoints:
     web:
@@ -40,6 +35,15 @@ app:
       secret: ${JWT_SECRET}
       expiration: 3600000
   bootstrap-admin:
-    username: admin
-    password: admin
-    email: admin@yopmail.com
+    username: ${BOOTSTRAP_ADMIN_USERNAME}
+    password: ${BOOTSTRAP_ADMIN_PASSWORD}
+    email: ${BOOTSTRAP_ADMIN_EMAIL}
+cloudflare:
+  r2:
+    endpoint: ${R2_ENDPOINT}
+    access-key: ${R2_ACCESS_KEY}
+    secret-key: ${R2_SECRET_KEY}
+    bucket-name: agrireach-private-videos
+    region: auto
+storage:
+  provider: r2

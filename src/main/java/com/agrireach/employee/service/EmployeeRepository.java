@@ -1,5 +1,6 @@
-package com.agrireach.employee;
+package com.agrireach.employee.service;
 
+import com.agrireach.employee.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

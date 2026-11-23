@@ -77,6 +77,7 @@ public class SecurityConfig {
             // Users must be authenticated to change passwords
             .requestMatchers("/api/v1/auth/change-password")
             .authenticated()
+
             // Only admins who have changed their initial password
             // can manage employees
             .requestMatchers("/api/v1/employees/**")
@@ -93,6 +94,24 @@ public class SecurityConfig {
                     Boolean.FALSE.equals(mustChange) && isAdmin
                 );
             })
+
+                // Only admins who have changed their initial password
+                // can request video uploads
+                .requestMatchers("/api/videos/upload-request")
+                .access((authentication, context) -> {
+                    var currentAuth = authentication.get();
+                    if (!(currentAuth instanceof JwtAuthenticationToken jwtAuth)) {
+                        return new AuthorizationDecision(false);
+                    }
+                    Boolean mustChange = jwtAuth.getToken()
+                        .getClaim("mustChangePassword");
+                    boolean isAdmin = currentAuth.getAuthorities()
+                        .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    return new AuthorizationDecision(
+                        Boolean.FALSE.equals(mustChange) && isAdmin
+                    );
+                })
+
             // All other APIs require authentication and a completed
             // initial password change
             .anyRequest()

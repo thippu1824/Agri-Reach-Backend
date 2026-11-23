@@ -1,5 +1,6 @@
-package com.agrireach.auth;
+package com.agrireach.auth.controller;
 
+import com.agrireach.auth.service.AuthService;
 import com.agrireach.auth.dto.ChangePasswordRequest;
 import com.agrireach.auth.dto.LoginRequest;
 import com.agrireach.auth.dto.LoginResponse;

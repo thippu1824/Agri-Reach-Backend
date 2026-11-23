@@ -1,10 +1,11 @@
-package com.agrireach.employee;
+package com.agrireach.employee.service;
 
 import com.agrireach.common.ResourceConflictException;
 import com.agrireach.common.ResourceNotFoundException;
 import com.agrireach.employee.dto.EmployeeCreateRequest;
 import com.agrireach.employee.dto.EmployeeListResponse;
 import com.agrireach.employee.dto.EmployeeUpdateRequest;
+import com.agrireach.employee.entity.Employee;
 import com.agrireach.user.Role;
 import com.agrireach.user.RoleRepository;
 import com.agrireach.user.User;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service

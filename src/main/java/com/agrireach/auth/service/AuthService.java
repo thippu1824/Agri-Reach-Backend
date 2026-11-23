@@ -1,10 +1,10 @@
-package com.agrireach.auth;
+package com.agrireach.auth.service;
 
 import com.agrireach.auth.dto.ChangePasswordRequest;
 import com.agrireach.auth.dto.LoginRequest;
 import com.agrireach.auth.dto.LoginResponse;
-import com.agrireach.employee.Employee;
-import com.agrireach.employee.EmployeeRepository;
+import com.agrireach.employee.entity.Employee;
+import com.agrireach.employee.service.EmployeeRepository;
 import com.agrireach.security.JwtService;
 import com.agrireach.user.User;
 import com.agrireach.user.UserRepository;
