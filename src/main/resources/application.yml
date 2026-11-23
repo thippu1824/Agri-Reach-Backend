@@ -1,26 +1,36 @@
 spring:
   application:
     name: agrireach-backend
+  # PostgreSQL database connection
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:postgresql://ep-misty-hill-bidvu9wt.c-5.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_RsF6DpfWNG0k
     driver-class-name: org.postgresql.Driver
+  #  datasource:
+  #    url: jdbc:postgresql://localhost:5432/agrireach
+  #    username: agrireach_app
+  #    password: root
+  #    driver-class-name: org.postgresql.Driver
+  # JPA and Hibernate configuration
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: none
+    show-sql: true
     open-in-view: false
     properties:
       hibernate:
         format_sql: true
+  # Flyway database migration configuration
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: false
     validate-on-migrate: true
+# Application server
 server:
   port: 8080
+# Spring Boot Actuator
 management:
   endpoints:
     web:
@@ -35,15 +45,17 @@ app:
       secret: ${JWT_SECRET}
       expiration: 3600000
   bootstrap-admin:
-    username: ${BOOTSTRAP_ADMIN_USERNAME}
-    password: ${BOOTSTRAP_ADMIN_PASSWORD}
-    email: ${BOOTSTRAP_ADMIN_EMAIL}
+    username: admin
+    password: admin
+    email: admin@yopmail.com
+
 cloudflare:
   r2:
-    endpoint: ${R2_ENDPOINT}
-    access-key: ${R2_ACCESS_KEY}
-    secret-key: ${R2_SECRET_KEY}
+    endpoint: https://0e3cae569b736bd7095f61326bf05a79.r2.cloudflarestorage.com
+    access-key: 1e9f664bf12fa9cdb5cdf2529a08e4f6
+    secret-key: 29ebe51fd795bb9ec5c44b66fc9edf44db56f4432e321ecdc06e35ee080f24a3
     bucket-name: agrireach-private-videos
     region: auto
+
 storage:
   provider: r2

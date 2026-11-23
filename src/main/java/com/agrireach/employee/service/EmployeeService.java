@@ -10,6 +10,8 @@ import com.agrireach.user.Role;
 import com.agrireach.user.RoleRepository;
 import com.agrireach.user.User;
 import com.agrireach.user.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,10 @@ import java.util.UUID;
 
 @Service
 public class EmployeeService {
+
+    private static final Logger logger =
+        LoggerFactory.getLogger(EmployeeService.class);
+
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -38,6 +44,12 @@ public class EmployeeService {
 
     @Transactional
     public UUID createEmployee(EmployeeCreateRequest request) {
+        logger.info(
+            "Creating employee account with username: {} and employee code: {}",
+            request.getUsername(),
+            request.getEmployeeCode()
+        );
+
         // 1. Check whether username already exists
         String username = request.getUsername().trim();
         if (userRepository.existsByUsername(username)) {
@@ -79,6 +91,12 @@ public class EmployeeService {
         user.setActive(true);
         user.setMustChangePassword(true);
         user.getRoles().add(employeeRole);
+
+        logger.info(
+            "Creating user account for employee. username={}, email={}",
+            username,
+            email
+        );
         User savedUser = userRepository.save(user);
         // 6. Create the employee profile
         Employee employee = new Employee();
@@ -86,6 +104,12 @@ public class EmployeeService {
         employee.setEmployeeCode(employeeCode);
         employee.setFullName(request.getFullName().trim());
         employee.setPhoneNumber(request.getPhoneNumber());
+
+        logger.info(
+            "Creating employee profile. employeeCode={}, fullName={}",
+            employeeCode,
+            request.getFullName().trim()
+        );
         Employee savedEmployee = employeeRepository.save(employee);
         // 7. Return the new employee ID
         return savedEmployee.getId();
@@ -93,6 +117,7 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public List<EmployeeListResponse> getAllEmployees() {
+        logger.info("Fetching all employees");
         return employeeRepository
             .findAllByOrderByCreatedAtDesc()
             .stream()
@@ -113,6 +138,13 @@ public class EmployeeService {
     public EmployeeListResponse updateEmployee(
         UUID employeeId,
         EmployeeUpdateRequest request) {
+        logger.info(
+            "Updating employee details. employeeId={}, fullName={}, email={}, phoneNumber={}",
+            employeeId,
+            request.getFullName(),
+            request.getEmail(),
+            request.getPhoneNumber()
+        );
         // Find employee
         Employee employee = employeeRepository.findById(employeeId)
             .orElseThrow(() ->
@@ -142,6 +174,14 @@ public class EmployeeService {
                 : phone.trim()
         );
         user.setEmail(email);
+
+        logger.info(
+            "Saving updated employee details. employeeId={}, fullName={}, email={}, phoneNumber={}",
+            employeeId,
+            request.getFullName(),
+            email,
+            request.getPhoneNumber()
+        );
         // Return updated employee details
         return new EmployeeListResponse(
             employee.getId(),
@@ -158,6 +198,11 @@ public class EmployeeService {
     @Transactional
     public EmployeeListResponse updateEmployeeStatus(UUID employeeId, boolean active) {
 
+        logger.info(
+            "Updating employee status. employeeId={}, active={}",
+            employeeId,
+            active
+        );
         Employee employee = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
@@ -166,6 +211,12 @@ public class EmployeeService {
         User user = employee.getUser();
         user.setActive(active);
 
+
+        logger.info(
+            "Saving updated employee status. employeeId={}, active={}",
+            employeeId,
+            active
+        );
         return new EmployeeListResponse(
             employee.getId(),
             employee.getEmployeeCode(),
@@ -181,10 +232,19 @@ public class EmployeeService {
 
     @Transactional(readOnly = true)
     public EmployeeListResponse getEmployeeById(UUID employeeId) {
+        logger.info("Fetching employee details. employeeId={}", employeeId);
+
         Employee employee = employeeRepository.findById(employeeId)
             .orElseThrow(() ->
                 new ResourceNotFoundException("Employee not found"));
         User user = employee.getUser();
+
+        logger.info(
+            "Fetched employee details. employeeId={}, username={}, fullName={}",
+            employeeId,
+            user.getUsername(),
+            employee.getFullName()
+        );
         return new EmployeeListResponse(
             employee.getId(),
             employee.getEmployeeCode(),

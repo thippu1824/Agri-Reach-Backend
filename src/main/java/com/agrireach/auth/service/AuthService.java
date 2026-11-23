@@ -1,5 +1,6 @@
 package com.agrireach.auth.service;
 
+import com.agrireach.auth.controller.AuthController;
 import com.agrireach.auth.dto.ChangePasswordRequest;
 import com.agrireach.auth.dto.LoginRequest;
 import com.agrireach.auth.dto.LoginResponse;
@@ -8,6 +9,8 @@ import com.agrireach.employee.service.EmployeeRepository;
 import com.agrireach.security.JwtService;
 import com.agrireach.user.User;
 import com.agrireach.user.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +23,9 @@ import java.util.List;
 
 @Service
 public class AuthService {
+
+    private static final Logger logger =
+        LoggerFactory.getLogger(AuthService.class);
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -44,6 +50,7 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
+        logger.info("Logging in..... {}", request.getUsername());
         // 1. Verify username and password
         Authentication authentication =
             authenticationManager.authenticate(
@@ -77,6 +84,10 @@ public class AuthService {
             .map(Employee::getFullName)
             .orElse(user.getUsername());
 
+        logger.info("User {} logged in successfully. Roles: {}, Must change password: {}",
+            user.getUsername(),
+            roles,
+            user.isMustChangePassword());
         // 6. Return login response
         return new LoginResponse(
             token,
@@ -92,6 +103,8 @@ public class AuthService {
     public void changePassword(
         String username,
         ChangePasswordRequest request) {
+        logger.info("Changing password for user: {}", username);
+
         User user = userRepository.findByUsername(username)
             .orElseThrow(() ->
                 new IllegalArgumentException("User not found"));
@@ -110,5 +123,7 @@ public class AuthService {
             passwordEncoder.encode(request.getNewPassword()));
         user.setMustChangePassword(false);
         userRepository.save(user);
+
+        logger.info("Password changed successfully for user: {}", username);
     }
 }
