@@ -1,5 +1,6 @@
 package com.agrireach.video.controller;
 
+import com.agrireach.video.dto.VideoResponse;
 import com.agrireach.video.dto.VideoUploadRequest;
 import com.agrireach.video.dto.VideoUploadResponse;
 import com.agrireach.video.service.VideoService;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -50,5 +52,30 @@ public class VideoController {
         logger.info("Video upload confirmation completed. videoId={}", videoId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/admin")
+    public ResponseEntity<List<VideoResponse>> getAllVideosForAdmin() {
+        logger.info("Received request to fetch all videos for Admin");
+
+        List<VideoResponse> videos = videoService.getAllVideos();
+
+        logger.info(
+            "Returning video list to Admin. count={}",
+            videos.size()
+        );
+        return ResponseEntity.ok(videos);
+    }
+    @GetMapping("/employee")
+    public ResponseEntity<List<VideoResponse>> getActiveVideosForEmployee() {
+        logger.info("Received request to fetch active videos for Employee");
+
+        List<VideoResponse> videos = videoService.getActiveVideos();
+
+        logger.info(
+            "Returning active video list to Employee. count={}",
+            videos.size()
+        );
+        return ResponseEntity.ok(videos);
     }
 }

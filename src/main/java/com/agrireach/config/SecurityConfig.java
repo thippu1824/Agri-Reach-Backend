@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -119,6 +120,39 @@ public class SecurityConfig {
                         .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
                     return new AuthorizationDecision(
                         Boolean.FALSE.equals(mustChange) && isAdmin
+                    );
+                })
+
+                // Only admins who have changed their initial password
+                // can view all videos
+                .requestMatchers(HttpMethod.GET, "/api/videos/admin")
+                .access((authentication, context) -> {
+                    var currentAuth = authentication.get();
+                    if (!(currentAuth instanceof JwtAuthenticationToken jwtAuth)) {
+                        return new AuthorizationDecision(false);
+                    }
+                    Boolean mustChange = jwtAuth.getToken()
+                        .getClaim("mustChangePassword");
+                    boolean isAdmin = currentAuth.getAuthorities()
+                        .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    return new AuthorizationDecision(
+                        Boolean.FALSE.equals(mustChange) && isAdmin
+                    );
+                })
+                // Only employees who have changed their initial password
+                // can view active videos
+                .requestMatchers(HttpMethod.GET, "/api/videos/employee")
+                .access((authentication, context) -> {
+                    var currentAuth = authentication.get();
+                    if (!(currentAuth instanceof JwtAuthenticationToken jwtAuth)) {
+                        return new AuthorizationDecision(false);
+                    }
+                    Boolean mustChange = jwtAuth.getToken()
+                        .getClaim("mustChangePassword");
+                    boolean isEmployee = currentAuth.getAuthorities()
+                        .contains(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+                    return new AuthorizationDecision(
+                        Boolean.FALSE.equals(mustChange) && isEmployee
                     );
                 })
 

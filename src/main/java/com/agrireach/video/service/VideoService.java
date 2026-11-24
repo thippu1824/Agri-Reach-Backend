@@ -2,6 +2,7 @@ package com.agrireach.video.service;
 
 import com.agrireach.storage.StorageObjectMetadata;
 import com.agrireach.storage.StorageProvider;
+import com.agrireach.video.dto.VideoResponse;
 import com.agrireach.video.dto.VideoUploadRequest;
 import com.agrireach.video.dto.VideoUploadResponse;
 import com.agrireach.video.entity.Video;
@@ -15,11 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 @Service
 public class VideoService {
+
     private static final Logger logger =
         LoggerFactory.getLogger(VideoService.class);
     private static final int UPLOAD_URL_EXPIRATION_MINUTES = 15;
@@ -180,5 +183,31 @@ public class VideoService {
             videoId,
             metadata.getContentLength()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<VideoResponse> getAllVideos() {
+        logger.info("Fetching all training videos for Admin");
+
+        List<VideoResponse> videos = videoRepository
+            .findAllByOrderByCreatedAtDesc()
+            .stream()
+            .map(VideoResponse::new)
+            .toList();
+        logger.info("Fetched all training videos. count={}", videos.size());
+        return videos;
+    }
+    @Transactional(readOnly = true)
+    public List<VideoResponse> getActiveVideos() {
+        logger.info("Fetching active training videos for Employee");
+
+        List<VideoResponse> videos = videoRepository
+            .findByStatusOrderByCreatedAtDesc(VideoStatus.ACTIVE)
+            .stream()
+            .map(VideoResponse::new)
+            .toList();
+
+        logger.info("Fetched active training videos. count={}", videos.size());
+        return videos;
     }
 }
