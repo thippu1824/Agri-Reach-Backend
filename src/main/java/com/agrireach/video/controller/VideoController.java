@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.agrireach.video.dto.VideoDownloadResponse;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,4 +78,26 @@ public class VideoController {
         );
         return ResponseEntity.ok(videos);
     }
+
+
+    @GetMapping("/{videoId}/download-url")
+    public ResponseEntity<VideoDownloadResponse> generateDownloadUrl(
+            @PathVariable UUID videoId) {
+
+        logger.info(
+                "Received video download URL request. videoId={}",
+                videoId
+        );
+
+        VideoDownloadResponse response =
+                videoService.generateDownloadUrl(videoId);
+
+        logger.info(
+                "Returning video download URL. videoId={}",
+                videoId
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
 }

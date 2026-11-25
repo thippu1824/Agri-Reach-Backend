@@ -156,7 +156,28 @@ public class SecurityConfig {
                     );
                 })
 
-            // All other APIs require authentication and a completed
+                // Admins and Employees who have changed their initial
+                // password can request download URLs for active videos.
+                .requestMatchers(HttpMethod.GET, "/api/videos/*/download-url"
+                )
+                .access((authentication, context) -> {
+                    var currentAuth = authentication.get();
+                    if (!(currentAuth instanceof JwtAuthenticationToken jwtAuth)) {
+                        return new AuthorizationDecision(false);
+                    }
+                    Boolean mustChange = jwtAuth.getToken().getClaim("mustChangePassword");
+                    boolean isAdmin = currentAuth.getAuthorities()
+                            .contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    boolean isEmployee = currentAuth.getAuthorities()
+                            .contains(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
+                    return new AuthorizationDecision(
+                            Boolean.FALSE.equals(mustChange)
+                                    && (isAdmin || isEmployee)
+                    );
+                })
+
+
+                            // All other APIs require authentication and a completed
             // initial password change
             .anyRequest()
             .access((authentication, context) -> {

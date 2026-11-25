@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import com.agrireach.video.dto.VideoDownloadResponse;
 
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +27,8 @@ public class VideoService {
     private static final Logger logger =
         LoggerFactory.getLogger(VideoService.class);
     private static final int UPLOAD_URL_EXPIRATION_MINUTES = 15;
+    private static final int DOWNLOAD_URL_EXPIRATION_MINUTES = 60;
+
     private final VideoRepository videoRepository;
     private final StorageProvider storageProvider;
     @Value("${video.upload.max-size-bytes:524288000}")
@@ -210,4 +213,64 @@ public class VideoService {
         logger.info("Fetched active training videos. count={}", videos.size());
         return videos;
     }
+
+
+    @Transactional(readOnly = true)
+    public VideoDownloadResponse generateDownloadUrl(UUID videoId) {
+
+        logger.info(
+                "Generating download URL for videoId={}",
+                videoId
+        );
+        // 1. Find video in database
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Video not found"
+                ));
+
+        // 2. Only ACTIVE videos can be downloaded
+        if (video.getStatus() != VideoStatus.ACTIVE) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Active video not found"
+            );
+        }
+
+        String downloadUrl;
+        try {
+            downloadUrl = storageProvider.generatePresignedDownloadUrl(
+                    video.getObjectKey(),
+                    DOWNLOAD_URL_EXPIRATION_MINUTES
+            );
+        } catch (RuntimeException exception) {
+
+            logger.error(
+                    "Failed to generate download URL. videoId={}",
+                    videoId,
+                    exception
+            );
+
+            throw new ResponseStatusException(
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "Unable to generate video download URL"
+            );
+        }
+
+        logger.info(
+                "Download URL generated successfully. videoId={}, expiresInMinutes={}",
+                videoId,
+                DOWNLOAD_URL_EXPIRATION_MINUTES
+        );
+
+        return new VideoDownloadResponse(
+                video.getId(),
+                downloadUrl,
+                DOWNLOAD_URL_EXPIRATION_MINUTES,
+                video.getFileSize(),
+                video.getContentType(),
+                video.getTitle()
+        );
+    }
+
 }
